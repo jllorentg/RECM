@@ -43,14 +43,14 @@ thr
 TS_2_num_EB = input('Lines del calculador Erlang B'); % http://www.jungar.net/apps/erlangb/
 
 E1_2_num = ceil(TS_2_num_EB/30); % 30 TS para datos TS0 para sincronización TS16 para señalización
-MGW_2_num = ceil(E1_2_num/8);
+MGW_2_num = max(ceil(E1_2_num/8),ceil(ll_op1_op2_sim/256));
 
 ll_op1_op3_sim
 thr
 TS_3_num_EB = input('Lines del calculador Erlang B'); % http://www.jungar.net/apps/erlangb/
 
 E1_3_num = ceil(TS_3_num_EB/30); % 30 TS para datos TS0 para sincronización TS16 para señalización
-MGW_3_num = ceil(E1_3_num/8);
+MGW_3_num = max(ceil(E1_3_num/8),ceil(ll_op1_op3_sim/256));
 
 %MGCF
 MGCF_2_num = ceil(MGW_2_num/100);
@@ -81,7 +81,9 @@ y = [0 1];
 line(x,y,'Color','red')
 
 capacidad_usuario = 10^6; %bytes
-capacidad_HSS_t = capacidad_usuario*lineas_t/(10^9); %GBytes
+capacidad_HSS = capacidad_usuario*lineas_t/(10^9)/HSS_num_EC; %GBytes
+capacidad_usuario_SLF = 2; %KB SIPURI+extras
+capacidad_SLF = capacidad_usuario_SLF*lineas_t/(10^3); %MBytes
 
 %% SBC (P-CSCF + Firewall + STUN/TURN)
 
@@ -107,9 +109,21 @@ trans_ICSCF_t_s = trans_ICSCF*llamadas_externas_s_reales;
 %% BGCF
 
 trans_BGCF_SIP = 10; % para una llamada VoIP (suponiendo caso peor todas las llamadas son hacia los operadores externos)
-trans_BGCF_SIP_t_s = trans_BGCF_SIP*llamadas_externas_s_reales;
+trans_BGCF1_SIP_t_s = trans_BGCF_SIP*ll_op1_op2;
+trans_BGCF2_SIP_t_s = trans_BGCF_SIP*ll_op1_op3;
 
-%% MMtel
+%% MGCF
 
-trans_MMtel_ISC = trans_subscriber_data/3;
-trans_MMtel_ISC_t_s = trans_MMtel_ISC*llamadas_t_s_reales;
+trans_MGCF = 33; % para una llamada VoIP (suponiendo caso peor todas las llamadas son hacia los operadores externos)
+trans_MGCF1_t_s = trans_MGCF*ll_op1_op2;
+trans_MGCF2_t_s = trans_MGCF*ll_op1_op3;
+
+%% MRF
+
+Capacidad_MRF = 2*llamadas_t_s_reales*0.05*64*t_llamada_s/(10^3); %Mbit/s
+
+%% VMS
+
+t_VM_s = 30;
+t_VM_in_Server = 8; %horas
+Capacidad_VMS = llamadas_t_s_reales*0.05*64*t_VM_s*t_VM_in_Server*3600/(8*10^6); %GB
